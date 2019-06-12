@@ -13,7 +13,7 @@ def read(fname):
 
 setup(
     name='pytest-salt-runtests-bridge',
-    version='2019.6.13',
+    version='2019.6.14',
     author='Pedro Algarvio',
     author_email='pedro@algarvio.me',
     maintainer='Pedro Algarvio',

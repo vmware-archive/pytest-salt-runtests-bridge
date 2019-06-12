@@ -36,44 +36,46 @@ def pytest_addoption(parser):
     group.addoption('--names-file', default=None, help='Ignored for now')
 
 
-@pytest.hookimpl(hookwrapper=True, tryfirst=True)
-def pytest_collection_modifyitems(config):
-    outcome = yield
-    items = outcome.get_result()
+@pytest.hookimpl(hookwrapper=True, trylast=True)
+def pytest_collection_modifyitems(config, items):
+    yield
+
     names_file = config.getoption('--names-file')
-    if names_file is not None:
-        start_num = len(items)
-        names = set()
-        with open(names_file) as rfh:
-            for line in rfh:
-                modpath = os.path.join(
-                    'tests',
-                    line.strip().replace('.', os.sep) + '.py')
-                names.add(modpath)
+    if names_file is None:
+        return
 
-        rootdir = config.rootdir
-        if not isinstance(rootdir, str):
-            rootdir = rootdir.strpath
+    start_num = len(items)
+    names = set()
+    with open(names_file) as rfh:
+        for line in rfh:
+            modpath = os.path.join(
+                'tests',
+                line.strip().replace('.', os.sep) + '.py')
+            names.add(modpath)
 
-        for item in items[:]:  # iterate over a copy of the list
-            relpath = os.path.relpath(item.fspath.strpath, rootdir)
-            if relpath in names:
-                # Whitelisted test
-                continue
-            elif relpath.startswith('tests/unit'):
-                # Unit tests are whitelisted
-                continue
-            items.remove(item)
+    rootdir = config.rootdir
+    if not isinstance(rootdir, str):
+        rootdir = rootdir.strpath
 
-        end_num = len(items)
-        if start_num != end_num:
-            log.warning(
-                '%d tests were removed from the initial collection of %s tests '
-                'because they weren\'t present in %s',
-                start_num - end_num,
-                start_num,
-                names_file
-            )
+    for item in items[:]:  # iterate over a copy of the list
+        relpath = os.path.relpath(item.fspath.strpath, rootdir)
+        if relpath in names:
+            # Whitelisted test
+            continue
+        elif relpath.startswith('tests/unit'):
+            # Unit tests are whitelisted
+            continue
+        items.remove(item)
+
+    end_num = len(items)
+    if start_num != end_num:
+        log.warning(
+            '%d tests were removed from the initial collection of %s tests '
+            'because they weren\'t present in %s',
+            start_num - end_num,
+            start_num,
+            names_file
+        )
 
 
 def pytest_load_initial_conftests(early_config, args):

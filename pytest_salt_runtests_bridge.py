@@ -36,7 +36,7 @@ def pytest_addoption(parser):
     group.addoption('--names-file', default=None, help='Ignored for now')
 
 
-@pytest.hookimpl(hookwrapper=True, trylast=True)
+@pytest.hookimpl(hookwrapper=True, tryfirst=True)
 def pytest_collection_modifyitems(config):
     outcome = yield
     items = outcome.get_result()

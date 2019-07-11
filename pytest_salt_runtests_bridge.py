@@ -62,7 +62,7 @@ def pytest_collection_modifyitems(config, items):
         if relpath in names:
             # Whitelisted test
             continue
-        elif relpath.startswith('tests/unit'):
+        elif relpath.startswith(os.sep.join(['tests', 'unit'])):
             # Unit tests are whitelisted
             continue
         items.remove(item)

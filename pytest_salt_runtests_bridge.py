@@ -5,9 +5,11 @@ from __future__ import absolute_import, unicode_literals, print_function
 import os
 import re
 import logging
+import warnings
 
 # Import 3rd-party libs
 import pytest
+from _pytest.warning_types import PytestDeprecationWarning
 
 log = logging.getLogger(__name__)
 
@@ -44,38 +46,10 @@ def pytest_collection_modifyitems(config, items):
     if names_file is None:
         return
 
-    start_num = len(items)
-    names = set()
-    with open(names_file) as rfh:
-        for line in rfh:
-            modpath = os.path.join(
-                'tests',
-                line.strip().replace('.', os.sep) + '.py')
-            names.add(modpath)
-
-    rootdir = config.rootdir
-    if not isinstance(rootdir, str):
-        rootdir = rootdir.strpath
-
-    for item in items[:]:  # iterate over a copy of the list
-        relpath = os.path.relpath(item.fspath.strpath, rootdir)
-        if relpath in names:
-            # Whitelisted test
-            continue
-        elif relpath.startswith(os.sep.join(['tests', 'unit'])):
-            # Unit tests are whitelisted
-            continue
-        items.remove(item)
-
-    end_num = len(items)
-    if start_num != end_num:
-        log.warning(
-            '%d tests were removed from the initial collection of %s tests '
-            'because they weren\'t present in %s',
-            start_num - end_num,
-            start_num,
-            names_file
-        )
+    warnings.warn(
+        PytestDeprecationWarning('--names-file is now completely ignored'),
+        stacklevel=2
+    )
 
 
 def pytest_load_initial_conftests(early_config, args):
